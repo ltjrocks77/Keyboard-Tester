@@ -1,5 +1,9 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace KeyboardTester
 {
@@ -124,6 +128,34 @@ namespace KeyboardTester
                     return OemQuotes;
                 default:
                     return null;
+            }
+        }
+
+        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            foreach (var key in FindVisualChildren<KeyboardKey>(this))
+            {
+                key.ViewModel.PreviouslyPressed = false;
+            }
+        }
+
+        public static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                    if (child is T t)
+                    {
+                        yield return t;
+                    }
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                    {
+                        yield return childOfChild;
+                    }
+                }
             }
         }
     }
